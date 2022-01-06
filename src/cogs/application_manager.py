@@ -1,117 +1,213 @@
 import discord
 from discord.ext import commands
 import json
+import aiofiles
 import random
 import string
-import datetime
-class ApplicationManager(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+import time
+from datetime import datetime
+import asyncio
 
+class ApplicationManager(commands.Cog):
+    
+    def __init__(self,bot):
+        self.bot = bot
+        self.applicable = {
+            "staff":self.staff,
+            "support":self.support
+        }
+        self.acceptance = {
+            "staff":self.staff_accept,
+            "support":self.support_accept
+        }
+        self.question = {
+            "support":[
+                "blah",
+                "blah2"
+            ],
+            "staff":[
+                "a",
+                "b",
+                "c"
+            ]
+        }
+        self.roles = {
+            "support":[
+                927257982931173417,
+                927257821379174420,
+                911930501613359124
+            ],
+            "staff":[
+                928281498925297724,
+                911930501613359124
+            ]
+        }
     @commands.Cog.listener()
     async def on_ready(self):
-        print('Application manager cog loaded.')
-    
+        print("ApplicationManager cog is loaded.")
     @commands.command()
-    async def apply(self, ctx, appid:int):
-        a = await ctx.send(f"Finding the application with Application ID {appid}...")
+    async def apply(self,ctx,apply_=None):
+        if apply_ is None:
+            a = '\n'.join(list(self.applicable))
+            return await ctx.send(embed=discord.Embed(title="Application not found",description=f"You cannnot supply empty application name.\nAvailable applications:\n\n{a}", color=0x00e5ff))
+        if apply_ not in list(self.applicable):
+            return await ctx.send("Your application seem doesn't exist *yet*.")
+        await self.applicable[apply_](ctx)
 
-        async with ctx.typing():
-            with open(f"src/data/applications.json") as f:
-                applications = json.load(f)
-                try:
-                    application = applications[appid]
-                    assert application['status'] == 'open' and application['guildID'] == ctx.guild.id
-                except KeyError:
-                    await a.edit(content=f"Application ID {appid} not found.",delete_after=5)
-                    return
-                except AssertionError:
-                    await a.edit(content=f"Application ID {appid} is not open or you're in wrong guild.",delete_after=5)
-                    return
-                await a.edit(content=f"Application ID {appid} found.\n\n{application['description']}\nPlease check your DM and proceed the application in there!",delete_after=5)
-                await dm_application_process(ctx,appid)
-    
-    async def dm_application_process(self, ctx, appid):
-        with open(f"src/data/applications.json") as f:
-            applications = json.load(f)
-            application = applications[appid]
-        await ctx.author.send(f"{ctx.author.mention} You have 1 minutes for each questions!")
+    async def staff(self,ctx):
+        await ctx.author.send(embed=discord.Embed(title="Staff applying process.",description="I have started this application process.", color=0x00ffd2))
+        questions = self.question["staff"]
+        await ctx.send("Check your direct messages!👀")
+        await ctx.author.send("You gonna answer the question in real shortly. Worth knowing that you have 2 minutes for each question.")
         responses = {}
-        for question in application["question"]:
-            await ctx.author.send(f"Question: {question['question']}\nAnswer:")
-            response = self.bot.wait_for('message', check=lambda m: m.author == ctx.author, timeout=60)
-            if response is None or response == "":
-                await ctx.author.send(f"You have not answered in time!\nYou have to start over.")
-                return
+        for question in questions:
+            await ctx.author.send(f"Question: {question}")
+            response = await self.bot.wait_for('message',check=lambda m: m.author == ctx.author and m.guild is None)
+            if response in [""," ",None]:
+                return await ctx.send("You can't return an empty answer! Start over!")
             responses[question] = response.content
-            text = ""
-        for question,answer in response.items():
-            text += f"Question: {question}\nAnswer: {answer}\n\n"
-        await ctx.send("Try to check the question again.\nIf you are satisfied, type 'yes' to submit your application. Otherwise, type 'no' to start over.")
-        response = self.bot.wait_for('message', check=lambda m: m.author == ctx.author, timeout=60)
-        if response is None or response == "":
-            await ctx.author.send(f"You have not answered in time!\nYou have to start over.")
-            return
-        if response.content.lower() == "yes":
-            await ctx.send(f"Your application has been submitted.\nHere's the question and answer.\n{text}")
-            applyid = ''.join(random.sample(string.ascii_letters + string.digits, k=10))
-            application['users'] = {str(ctx.author.id):responses,"applyid":applyid,time:time.time()}
-            with open(f"src/data/applications.json", "w") as f:
-                json.dump(applications, f, indent=4)
-            await self.notify(ctx, appid, applyid)
-        else:
-            await ctx.author.send(f"Your application has been cancelled.")
-    
-    async def notify(self, ctx, appid, applyid):
-        with open(f"src/data/applications.json") as f:
-            applications = json.load(f)
-        guild = self.bot.get_guild(int(applications[appid]['guildID']))
-        channel = guild.get_channel(int(applications[appid]['channelID']))
-        await channel.send(f"New application from {ctx.author.mention}!\nApplication ID: {applyid}")
-        embed = discord.Embed(title=f"Response from {ctx.author.mention}", description=f"Application ID: {applyid}", color=0x00ff00)
-        for question,responses in app['users'][str(ctx.author.id)].items():
-            embed.add_field(name=question, value=responses)
-        embed.set_footer(text=f"Application ID: {applyid}. Type 'a!accept {applyid}' to accept the application. Type 'a!reject {applyid}' to reject the application.\nSend when {str(datetime.datetime.fromtimestamp(app['users'][str(ctx.author.id)]['time'])).replace('-' ,'/')}")
-        await channel.send(embed=embed)
+        await ctx.send("Thanks for taking some times for questions! Your application will be applyed shortly!")
+        now = time.time()
+        async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+            id = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+            embed = discord.Embed(title="New Application!")
+            embed.add_field(name="Name",value=ctx.author.mention)
+            for question,answer in responses.items():
+                embed.add_field(name="Q: "+question,value="A: " + answer)
+            embed.add_field(name="Applied when",value=str(datetime.fromtimestamp(now)).replace("-","/"))
+            embed.add_field(name="Type",value="staff")
+            embed.set_footer(text=f"You can accept this application by do `a!accept {id}`")
+            
+            db = json.loads(await fp.read())
+            for channel in ctx.guild.channels:
+                if channel.id == 926647677033259058:
+                    break
+            a = await channel.send(embed=embed)
+            a = a.id
+            db[id] = {
+                "name":ctx.author.mention,
+                "response":responses,
+                "when":now,
+                "type":"staff",
+                "id":a,
+                "aname":ctx.author.name
+            }
+        async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
+            await fp.write(json.dumps(db,indent=4))
     
     @commands.command()
-    async def create_application(self, ctx, *, description=None):
-        if description is None:
-            description="When impostor is sus. 🥶🥶🥶🥶🥶🥶💀💀🤔"
-        guild = ctx.guild
-        channel = ctx.channel
-        with open(f"src/cogs/datas/applications.json") as f:
-            applications = json.load(f)
-        applicationid = ''.join(random.sample(string.ascii_letters + string.digits, k=10))
-        applications[applicationid] = {
-            "guildID":guild.id,
-            "channelID":channel.id,
-            "description":description,
-            "question":[],
-            "status":"open"
-        }
-        with open(f"src/cogs/datas/applications.json", "w") as f:
-            json.dump(applications, f, indent=4)
-        await ctx.send(f"Application created.\nApplication ID: {len(applications)}\nType 'a!apply {len(applications)}' to apply.")
-        await ctx.send("Now let's setup questions")
-        questions = []
-        while True:
-            await ctx.send("Send any message to be the question. Type 'done' when you're done. Remember you have 2 minutes for each question.")
-            response = self.bot.wait_for('message', check=lambda m: m.author == ctx.author, timeout=120)
-            if response is None or response == "":
-                await ctx.send("You didn't send question in time. I think that would be done.")
-                return
-            if response.content.lower() == "done":
-                break
-            questions.append(response.content)
-        await ctx.send("Done!")
-        with open(f"src/data/applications.json") as f:
-            applications = json.load(f)
-        applications[applicationid]["question"] = questions
-        with open(f"src/data/applications.json", "w") as f:
-            json.dump(applications, f, indent=4)
-        
-        
+    @commands.has_role("Server Admins")
+    async def accept(self,ctx,app_id):
+        async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+            db = json.loads(await fp.read())
 
+        if app_id not in list(db):
+            return await ctx.send("There's no guy with that ID? What do you mean?")
+
+        await self.acceptance[db[app_id]["type"]](ctx,db,app_id)
+
+    async def staff_accept(self,ctx,db,app_id):
+        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@>")))
+        for role in ctx.guild.roles:
+            for role_id in self.roles["staff"]:
+                if role_id == role.id:
+                    print(f"Adding {role.name} which is {role.id}")
+                    await user.add_roles(role)
+        await user.send(f"Congratulations! Your staff application is accepted! in {ctx.guild.name} by {ctx.author.mention}")
+        del db[app_id]
+        async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
+            await fp.write(json.dumps(db,indent=4))
+
+    async def support(self,ctx):
+        await ctx.author.send(embed=discord.Embed(title="Support applying process.",description="what ever sentence u want"))
+        questions = self.question["support"]
+        await ctx.send("Check your direct messages!👀")
+        await ctx.author.send("You gonna answer the question in real shortly. Worth knowing that you have 2 minutes for each question.")
+        responses = {}
+        for question in questions:
+            await ctx.author.send(f"Question: {question}")
+            response = await self.bot.wait_for('message',check=lambda m: m.author == ctx.author and m.guild is None)
+            if response in [""," ",None]:
+                return await ctx.author.send("You can't return an empty answer! Start over!")
+            responses[question] = response.content
+        await ctx.send("Thanks for taking some times for questions! Your application will be applyed shortly!")
+        now = time.time()
+        async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+            id = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+            embed = discord.Embed(title="New Application!")
+            embed.add_field(name="Name",value=ctx.author.mention)
+            for question,answer in responses.items():
+                embed.add_field(name="Q: "+question,value="A: " + answer)
+            embed.add_field(name="Applied when",value=str(datetime.fromtimestamp(now)).replace("-","/"))
+            embed.add_field(name="Type:",value="Support")
+            embed.set_footer(text=f"You can accept this application by do `a!accept {id}`")
+            db = json.loads(await fp.read())
+            for channel in ctx.guild.channels:
+                if channel.id == 926647677033259058:
+                    break
+            a = await channel.send(embed=embed)
+            a = a.id
+            db[id] = {
+                "name":ctx.author.mention,
+                "response":responses,
+                "when":now,
+                "type":"support",
+                "id":a,
+                "aname":ctx.author.name
+            }
+        async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
+            await fp.write(json.dumps(db,indent=4))
+    
+    async def support_accept(self,ctx,db,app_id):
+        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@>")))
+        for role in ctx.guild.roles:
+            for role_id in self.roles["support"]:
+                if role_id == role.id:
+                    print(f"Adding {role.name} which is {role.id}")
+                    await user.add_roles(role)
+        await user.send(f"Congratulations! Your support application is accepted! in {ctx.guild.name} by {ctx.author.mention}")
+        del db[app_id]
+        async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
+            await fp.write(json.dumps(db,indent=4))
+    @commands.command(aliases=["apps"])
+    async def applications(self,ctx):
+        a = '\n'.join(list(self.applicable))
+        await ctx.send(embed=discord.Embed(title='Available Applications',description=f"{a}"))
+                       
+    @commands.command(aliases=["l"])
+    @commands.has_role("Vynx Devs")
+    async def lists(self,ctx):
+        embeds = []
+        async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+            db = json.loads(await fp.read())
+        for id in list(db):
+            embed = discord.Embed(title=f"{db[id]['aname']}'s Application")
+            embed.add_field(name="Name",value=ctx.author.mention)
+            for question,answer in db[id]["response"].items():
+                embed.add_field(name="Q: "+question,value="A: " + answer)
+            embed.add_field(name="Applied when",value=str(datetime.fromtimestamp(db[id]["when"])).replace("-","/"))
+            embed.add_field(name="Type",value="staff")
+            embed.set_footer(text=f"You can accept this application by do `a!accept {id}`")
+            embeds.append(embed)
+        for embed in embeds:
+            await ctx.send(embed=embed)
+            await asyncio.sleep(0.3)
+    @commands.command()
+    async def decline(self,ctx,app_id,*,reason="No reason provided"):
+        async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+            db = json.loads(await fp.read())
+        if app_id not in list(db):
+            return await ctx.send("What application you trying to decline? 🤔")
+        name = db[app_id]['aname']
+        user = await self.bot.fetch_user(int(db[app_id]["name"].strip("<@>")))
+        a = await ctx.send(embed=discord.Embed(title=f"Cancelling {db[app_id]['aname']}'s Application."))
+        type = db[app_id]['type']
+        del db[app_id]
+        async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
+            await fp.write(json.dumps(db,indent=4))
+        await user.send(embed=discord.Embed(title=f"Your {type} application is declined!",description=f"Reason:\n{reason}"))
+        await a.edit(embed=discord.Embed(title=f"Cancelled {name}'s Application'"))
+    
+            
 def setup(bot):
     bot.add_cog(ApplicationManager(bot))

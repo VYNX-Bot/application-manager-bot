@@ -1,4 +1,4 @@
 {
-    "game": ["Over {} applications was requested using by me.","What do you expect? I am a simple discord applications bot."],
-    "status": "online"
+    "game": ["Over {} applications was requested using by me.","What do you expect? I am a simple discord applications bot.","{} Applications pending."],
+    "status": "idle"
 }

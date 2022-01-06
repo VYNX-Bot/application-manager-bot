@@ -1,12 +1,10 @@
 import discord
 from discord.ext import commands
 import os
-from dotenv import load_dotenv
-bot = commands.Bot(command_prefix='a!')
+import keep_alive
 
-a = {}
-for line in open(".env").readlines():
-    a[line.split("=")[0]] = line.split("=")[1].strip()
+bot = commands.Bot(command_prefix='a!',intents=discord.Intents().all())
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -19,4 +17,5 @@ for cog in os.listdir('./src/cogs'):
         cog = f'src.cogs.{cog[:-3]}'
         bot.load_extension(cog)
 
-bot.run(a["TOKEN"])
+keep_alive.keep_alive()
+bot.run(os.environ["TOKEN"])

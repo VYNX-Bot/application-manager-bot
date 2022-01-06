@@ -1,18 +1,19 @@
 import discord
 from discord.ext import commands
 import json
-import dta
+import dta #upm package(dta)
+#keep_alive?
 import random
 class Activity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+    
     @commands.Cog.listener()
     async def on_ready(self):
         print('Activity cog loaded.')
         with open("src/cogs/datas/activity.json", "r") as f:
             activity = dta.Dict2Attr(json.load(f))
-            game = random.choice(activity.game)
+            game = random.choice(activity.game).format(len(list(dta.Attr2Dict(activity))))
             if activity.status == 'online':
                 await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(game))
             elif activity.status == 'idle':
@@ -25,6 +26,7 @@ class Activity(commands.Cog):
                 raise ValueError('Invalid status.')
 
     @commands.command()
+    @commands.has_role("Vynx Devs")
     async def activity(self, ctx, *, activity):
         """
         Set the bot's activity.
