@@ -26,7 +26,7 @@ class ApplicationManager(commands.Cog):
                 "blah2"
             ],
             "staff":[
-                "a",
+                "What is your discord username and descriminator?",
                 "b",
                 "c"
             ]
@@ -58,7 +58,7 @@ class ApplicationManager(commands.Cog):
         await ctx.author.send(embed=discord.Embed(title="Staff applying process.",description="I have started this application process.", color=0x00ffd2))
         questions = self.question["staff"]
         await ctx.send("Check your direct messages!👀")
-        await ctx.author.send("You gonna answer the question in real shortly. Worth knowing that you have 2 minutes for each question.")
+        await ctx.author.send("You will have to answer some questions to apply for the staff position. Please Note: that you have **2 minutes** for each question.")
         responses = {}
         for question in questions:
             await ctx.author.send(f"Question: {question}")
@@ -122,7 +122,7 @@ class ApplicationManager(commands.Cog):
         await ctx.author.send(embed=discord.Embed(title="Support applying process.",description="what ever sentence u want"))
         questions = self.question["support"]
         await ctx.send("Check your direct messages!👀")
-        await ctx.author.send("You gonna answer the question in real shortly. Worth knowing that you have 2 minutes for each question.")
+        await ctx.author.send("You will have to have to answer some questions to apply for the support position. Please Note: that you have **2 minutes** for each question.")
         responses = {}
         for question in questions:
             await ctx.author.send(f"Question: {question}")
