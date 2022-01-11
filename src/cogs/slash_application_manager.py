@@ -133,6 +133,7 @@ class SlashApplicationManager(ApplicationCog):
 		del db[app_id]
 		async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
 			await fp.write(json.dumps(db,indent=4))
+		await ctx.send("Successfully applied application and deleted from application database.")
 
 	async def support(self,ctx:slash.Context):
 		await ctx.author.send(embed=discord.Embed(title="Support applying process.",description="what ever sentence u want"))
@@ -185,6 +186,7 @@ class SlashApplicationManager(ApplicationCog):
 		del db[app_id]
 		async with aiofiles.open("src/cogs/datas/applications.json","w") as fp:
 			await fp.write(json.dumps(db,indent=4))
+		await ctx.author.send("Successfully applied application and deleted from application database.")
 	@slash.slash_command()
 	async def applications(self,ctx:slash.Context):
 		"""
