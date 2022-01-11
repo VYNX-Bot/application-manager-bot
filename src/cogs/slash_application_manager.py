@@ -36,7 +36,7 @@ class SlashApplicationManager(ApplicationCog):
             db = json.loads(await fp.read())
         ids = []
         for application, info in db.items():
-            ids.append(int(info["name"].strip("<@>")))
+            ids.append(int(info["name"].strip("<@!>")))
         if ctx.author.id in ids:
             return await ctx.send(
                 "You already applied! You need to wait your application to be reviewed!"
@@ -141,7 +141,7 @@ class SlashApplicationManager(ApplicationCog):
                 await ctx.send("Successfully applied application and done the process.")
 
     async def staff_accept(self, ctx: slash.Context, db, app_id, reason):
-        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@>")))
+        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@!>")))
         for role in ctx.guild.roles:
             for role_id in self.roles["staff"]:
                 if role_id == role.id:
@@ -219,7 +219,7 @@ class SlashApplicationManager(ApplicationCog):
             await fp.write(json.dumps(db, indent=4))
 
     async def support_accept(self, ctx: slash.Context, db, app_id, reason):
-        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@>")))
+        user = ctx.guild.get_member(int(db[app_id]["name"].strip("<@!>")))
         for role in ctx.guild.roles:
             for role_id in self.roles["support"]:
                 if role_id == role.id:
@@ -305,7 +305,7 @@ class SlashApplicationManager(ApplicationCog):
         if app_id not in list(db):
             return await ctx.send("What application you trying to decline? 🤔")
         name = db[app_id]["aname"]
-        user = await self.bot.fetch_user(int(db[app_id]["name"].strip("<@>")))
+        user = await self.bot.fetch_user(int(db[app_id]["name"].strip("<@!>")))
         a = await ctx.send(
             embed=discord.Embed(
                 title=f"Cancelling {db[app_id]['aname']}'s Application."

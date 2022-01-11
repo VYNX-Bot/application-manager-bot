@@ -3,7 +3,7 @@ import json
 import random
 
 import discord
-import dta  # upm package(dta)
+import dta # upm package(dta)
 from discord.ext import commands
 
 
