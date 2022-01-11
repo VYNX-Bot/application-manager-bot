@@ -6,6 +6,3 @@ normal command and the slash
 peoples
 ## usage
 you need to know discord.py and python and you'll know how to config things
-
-[]: # Language: markdown
-[]: # Path: README.md
