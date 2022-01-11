@@ -146,7 +146,7 @@ class SlashApplicationManager(ApplicationCog):
 			if response in [""," ",None]:
 				return await ctx.author.send("You can't return an empty answer! Start over!")
 			responses[question] = response.content
-		await ctx.send("Thanks for taking some times for questions! Your application will be applyed shortly!")
+		await ctx.author.send("Thanks for taking some times for questions! Your application will be applyed shortly!")
 		now = time.time()
 		async with aiofiles.open("src/cogs/datas/applications.json") as fp:
 			id = ''.join(random.sample(string.ascii_letters + string.digits, 10))
