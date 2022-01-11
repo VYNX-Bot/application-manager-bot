@@ -259,4 +259,4 @@ class ApplicationManager(commands.Cog):
 	
 			
 def setup(bot):
-	bot.add_cog(SlashApplicationManager(bot))
+	bot.add_cog(ApplicationManager(bot))
