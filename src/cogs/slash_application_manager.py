@@ -52,6 +52,13 @@ class SlashApplicationManager(ApplicationCog):
 		"""
 		This command for apply the application.
 		"""
+		async with aiofiles.open("src/cogs/datas/applications.json") as fp:
+			db = json.loads(await fp.read())
+		ids = []
+		for application, info in db.items():
+			ids.append(int(info["name"].strip("<@>")))
+		if ctx.author.id in ids:
+			return await ctx.send("You already applied! You need to wait your application to be reviewed!")
 		if apply_ not in list(self.applicable):
 			a = '\n'.join(list(self.applicable))
 			return await ctx.send(embed=discord.Embed(title="Application not found",description=f"You cannnot supply empty application name.\nAvailable applications:\n\n{a}", color=0x00e5ff))
