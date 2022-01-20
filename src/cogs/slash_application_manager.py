@@ -17,7 +17,7 @@ class SlashApplicationManager(ApplicationCog):
         print("SlashApplicationManager is loaded.")
         super().__init__(bot)
         self.bot = bot
-        self.admin = 911930082673696798
+        self.admin = 932721712460607524
         self.applicable = {"staff": self.staff, "support": self.support}
         self.acceptance = {"staff": self.staff_accept, "support": self.support_accept}
         self.question = {"support": ["blah", "blah2"], "staff": ["a", "b", "c"]}
