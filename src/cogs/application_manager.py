@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 import json
 import aiofiles
 import random
@@ -7,7 +6,7 @@ import string
 import time
 from datetime import datetime
 import asyncio
-
+from discord.ext import commands
 class ApplicationManager(commands.Cog):
     
     def __init__(self,bot):
@@ -70,7 +69,7 @@ class ApplicationManager(commands.Cog):
     async def on_ready(self):
         print("ApplicationManager cog is loaded.")
     @commands.command()
-    async def apply(self,ctx,apply_=None):
+    async def apply(self,ctx,apply_:str):
         async with aiofiles.open("src/cogs/datas/applications.json") as fp:
             db = json.loads(await fp.read())
         ids = []
@@ -131,7 +130,7 @@ class ApplicationManager(commands.Cog):
     
     @commands.command()
     @commands.has_role("Server Admins")
-    async def accept(self,ctx,app_id):
+    async def accept(self,ctx,app_id:str):
         async with aiofiles.open("src/cogs/datas/applications.json") as fp:
             db = json.loads(await fp.read())
 
@@ -224,13 +223,13 @@ class ApplicationManager(commands.Cog):
             embed.add_field(name="Type",value="staff")
             embed.set_footer(text=f"You can accept this application by do `a!accept {id}`")
             embeds.append(embed)
-        if embed == []:
+        if embeds == []:
             return await ctx.send("No application pending")
         for embed in embeds:
             await ctx.send(embed=embed)
             await asyncio.sleep(0.3)
     @commands.command()
-    async def decline(self,ctx,app_id,*,reason="No reason provided"):
+    async def decline(self,ctx,app_id:str,*,reason:str="No reason provided"):
         async with aiofiles.open("src/cogs/datas/applications.json") as fp:
             db = json.loads(await fp.read())
         if app_id not in list(db):
