@@ -63,15 +63,8 @@ class ApplicationManager(commands.Cog):
             ]
         }
         self.roles = {
-            "support":[
-                927257982931173417,
-                927257821379174420,
-                911930501613359124
-            ],
-            "staff":[
-                928281498925297724,
-                911930501613359124
-            ]
+            "support": [932721712460607525,932721712460607521,932721712460607518],
+            "staff": [932721712460607525,932721712460607522],
         }
     @commands.Cog.listener()
     async def on_ready(self):
@@ -121,7 +114,7 @@ class ApplicationManager(commands.Cog):
             
             db = json.loads(await fp.read())
             for channel in ctx.guild.channels:
-                if channel.id == 926647677033259058:
+                if channel.id == 932721714008301606:
                     break
             a = await channel.send(embed=embed)
             a = a.id
@@ -185,7 +178,7 @@ class ApplicationManager(commands.Cog):
             embed.set_footer(text=f"You can accept this application by do `a!accept {id}` or deny it using `a!decline {id}`")
             db = json.loads(await fp.read())
             for channel in ctx.guild.channels:
-                if channel.id == 926647677033259058:
+                if channel.id == 932721714008301606:
                     break
             a = await channel.send(embed=embed)
             a = a.id
@@ -231,6 +224,8 @@ class ApplicationManager(commands.Cog):
             embed.add_field(name="Type",value="staff")
             embed.set_footer(text=f"You can accept this application by do `a!accept {id}`")
             embeds.append(embed)
+        if embed == []:
+            return await ctx.send("No application pending")
         for embed in embeds:
             await ctx.send(embed=embed)
             await asyncio.sleep(0.3)
