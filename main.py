@@ -2,7 +2,6 @@ import os
 
 import discord
 import requests
-from discord.ext import commands
 
 import keep_alive
 import src.cogs.datas.slash_utils as slash

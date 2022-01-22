@@ -1,0 +1,14 @@
+{
+    "tasks":[
+        {
+            "label": "beautifier",
+            "type": "shell",
+            "command": "black .; isort .; autoimport .",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
