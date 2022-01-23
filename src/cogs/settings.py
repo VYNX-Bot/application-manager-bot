@@ -4,6 +4,7 @@ import aiofiles
 import discord
 from discord.ext import commands
 
+
 class Settings(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -13,25 +14,42 @@ class Settings(commands.Cog):
         print("Settings cog loaded")
 
     @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def make_app(self, app_name: str = None):
+    async def make_app(self, ctx, app_name: str = None):
         """
         Creates an application
 
         Required Argument:
             The name of the application
-        
+
         Required Permission:
-            Administrator
+            Administrator or Role that have permission.
         """
         if app_name == "None":
             await ctx.send("Please enter a name for your application")
             return
-
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
 
-        db[str(ctx.guild.id)]["applications"][app] = {"closed": False,"applications": []}
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
+
+        db[str(ctx.guild.id)]["applications"][app] = {
+            "closed": False,
+            "applications": [],
+        }
 
         async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
             await fp.write(json.dumps(db))
@@ -45,7 +63,6 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    @commands.has_permissions(administrator=True)
     async def set_app_desc(self, ctx, app_name: str = None, desc: str = None):
         """
         Sets the description of an application
@@ -53,9 +70,9 @@ class Settings(commands.Cog):
         Required Argument:
             The name of the application
             Description of the application
-        
+
         Required Permission:
-            Administrator
+            Administrator or Role that have permission.
         """
         if app_name == "None" or desc == "None":
             await ctx.send("Please enter a name for your application and a description")
@@ -63,6 +80,22 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
 
         db[str(ctx.guild.id)]["applications"][app_name]["description"] = desc
 
@@ -78,7 +111,6 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    @commands.has_permissions(administrator=True)
     async def make_question(self, app: str = None, question: str = None):
         """
         Adds a question to an application
@@ -86,9 +118,9 @@ class Settings(commands.Cog):
         Required Argument:
             The name of the application
             Question you want to add
-        
+
         Required Permission:
-            Administrator
+            Administrator or Role that have permission.
         """
         if app == "None" or question == "None":
             return await ctx.send(
@@ -104,6 +136,22 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
 
         if app not in list(db[str(ctx.guild.id)]["applications"]):
             return await ctx.send(
@@ -132,7 +180,6 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    @commands.has_permissions(administrator=True)
     async def apply_app_role(self, app: str = None, role: discord.Role = None):
         """
         Sets the role that will be given to the user when they apply for an application
@@ -142,7 +189,7 @@ class Settings(commands.Cog):
             Role
 
         Required Permission:
-            Administrator
+            Administrator or Role that have permission.
         """
         if app == "None" or role == "None":
             return await ctx.send(
@@ -158,6 +205,22 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
 
         if app not in list(db[str(ctx.guild.id)]["applications"]):
             return await ctx.send(
@@ -184,7 +247,7 @@ class Settings(commands.Cog):
                 color=discord.Color.green(),
             )
         )
-    
+
     @commands.command()
     async def set_app_log(self, app: str = None, channel: discord.TextChannel = None):
         """
@@ -193,9 +256,9 @@ class Settings(commands.Cog):
         Required Argument:
             The name of the application
             Channel
-        
+
         Required Permission:
-            Administrator
+            Administrator or Role that have permission.
         """
         if app == "None" or channel == "None":
             return await ctx.send(
@@ -211,6 +274,22 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
 
         if app not in list(db[str(ctx.guild.id)]["applications"]):
             return await ctx.send(
@@ -229,6 +308,68 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
             await fp.write(json.dumps(db))
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def add_app_mod(self, ctx, role: discord.Role = None):
+        if role is None:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter a role",
+                    color=discord.Color.red(),
+                )
+            )
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        try:
+            db[str(ctx.guild.id)]["mod_roles"].append(role.id)
+        except KeyError:
+            db[str(ctx.guild.id)]["mod_roles"] = [role.id]
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title="Success",
+                description=f"Role {role.name} added to mod roles",
+                color=discord.Color.green(),
+            )
+        )
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def set_setting_role(self, ctx, role: discord.Role = None):
+        if role is None:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter a role",
+                    color=discord.Color.red(),
+                )
+            )
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        try:
+            db[str(ctx.guild.id)]["setting_role"] = role.id
+        except KeyError:
+            db[str(ctx.guild.id)]["setting_role"] = role.id
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title="Success",
+                description=f"Role {role.name} added to setting role",
+                color=discord.Color.green(),
+            )
+        )
 
 
 def setup(bot):

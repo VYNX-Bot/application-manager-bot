@@ -5,6 +5,7 @@ import traceback
 import discord
 from discord.ext import commands
 
+
 class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -24,7 +25,7 @@ class ErrorHandler(commands.Cog):
                 await ctx.send(f"I don't know this command.")
         elif isinstance(e, commands.MissingRequiredArgument):
             await ctx.send(f"Missing required argument.")
-        
+
         elif isinstance(e, commands.MissingPermissions):
             await ctx.send(f"You don't have permission to use this command.")
 

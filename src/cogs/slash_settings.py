@@ -1,12 +1,13 @@
-import discord
-from src.cogs.etc import slash_utils
-from discord.ext import commands
 import json
 
 import aiofiles
+import discord
+from discord.ext import commands
+
+from src.cogs.etc import slash_utils
+
 
 class SlashSettings(slash_utils.ApplicationCog):
-
     @commands.Cog.listener()
     async def on_ready(self):
         print("Settings cog loaded")
