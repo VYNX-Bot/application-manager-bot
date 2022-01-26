@@ -1,8 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv()
 import os
 
 import discord
 import requests
-
 import keep_alive
 import src.cogs.datas.slash_utils as slash
 
