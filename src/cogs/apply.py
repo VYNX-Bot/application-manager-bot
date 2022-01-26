@@ -204,7 +204,7 @@ class Application_Manager(commands.Cog):
         ]["answers"] = answers
         db[str(ctx.guild.id)]["applications"][app_name]["applications"][
             str(applier.id)
-        ]["time_apply"] = time_apply
+        ]["timestamp"] = time_apply
         db[str(ctx.guild.id)]["applications"][app_name]["applications"][
             str(applier.id)
         ]["applier"] = applier.id
