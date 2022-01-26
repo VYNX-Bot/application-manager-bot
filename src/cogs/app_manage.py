@@ -101,4 +101,6 @@ Application ID: {info["id"]}
         for embed in embeds:
             await ctx.send(embed=embed)
             await asyncio.sleep(0.3)
-    
+
+def setup(bot):
+    bot.add_cog(App_manager(bot))
