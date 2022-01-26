@@ -1,108 +1,378 @@
 import json
-import time
-from datetime import fromtimestamp
 
 import aiofiles
 import discord
 from discord.ext import commands
-from discord.utils import get as finder
-
 from src.cogs.etc import slash_utils
 
-
-class Slash_App_manager(slash_utils.ApplicationCog):
-    def __init__(self, bot):
-        self.bot = bot
+class Settings(slash_utils.ApplicationCog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("App_manager cog loaded")
+        print("Settings cog loaded")
 
     @slash_utils.slash_command()
-    async def accept_app(self, app_name:str, app_:str, bypass:str = "false"):
+    @slash_utils.describe(app_name="Application Name")
+    async def make_app(self, ctx, app_name: str ):
+        """
+        Creates an application
+
+        Required Argument:
+            The name of the application
+
+        Required Permission:
+            Administrator or Role that have permission.
+        """
+        if app_name == "None":
+            await ctx.send("Please enter a name for your application")
+            return
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
-        if bypass == "true":
-            embed = discord.Embed(
-                title="Are you sure you want to accept this application?",
-                description="This action cannot be undone",
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
             )
-            embed.add_field(name="Application Name", value=app_name)
-            embed.add_field(name="Application ID", value=app_)
-            embed.add_field(name="Applier", value=str(ctx.guild.get_member(db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]["applier"])))
-            for question,answer in db[str(ctx.guild.id)]["applications"][app_name]["answers"].items():
-                embed.add_field(name=question, value=answer)
-            embed.add_field(name="Applied when", value=str(fromtimestamp(db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]["timestamp"])))
-            await ctx.send(embed=embed)
-            await ctx.send("Please type `yes` to accept this application")
-            msg = await self.bot.wait_for("message", check=lambda m: m.author == ctx.author)
-            if msg.content == "yes":
-                member = ctx.guild.get_member(db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]["applier"])
-                for role in ctx.guild.get_role(db[str(ctx.guild.id)]["applications"][app_name]["role"]):
-                    role = ctx.guild.get_role(role)
-                    await member.add_roles(role)
-                del db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]
-                await ctx.send("Application accepted")
-                async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
-                    await fp.write(json.dumps(db, indent=4))
-                await member.send("Your application name {} has been accepted".format(app_name))
-            else:
-                return await ctx.send(embed=discord.Embed(title="Cancelled", description="Application not accepted", color=discord.Color.red()))
 
-    @slash_utils.slash_command()
-    async def decline_app(self, app_name:str, app_:str, bypass:str = "false"):
-        async with aiofiles.open("src/cogs/db/db.json") as fp:
-            db = json.loads(await fp.read())
-        if bypass == "true":
-            embed = discord.Embed(
-                title="Are you sure you want to decline this application?",
-                description="This action cannot be undone",
+        db[str(ctx.guild.id)]["applications"][app] = {
+            "closed": False,
+            "applications": [],
+        }
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Success",
+                description=f"Application {app_name} created",
+                color=discord.Color.green(),
             )
-            embed.add_field(name="Application Name", value=app_name)
-            embed.add_field(name="Application ID", value=app_)
-            embed.add_field(name="Applier", value=str(ctx.guild.get_member(db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]["applier"])))
-            for question,answer in db[str(ctx.guild.id)]["applications"][app_name]["answers"].items():
-                embed.add_field(name=question, value=answer)
-            embed.add_field(name="Applied when", value=str(fromtimestamp(db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]["timestamp"])))
-            await ctx.send(embed=embed)
-            await ctx.send("Please type `yes` to decline this application")
-            msg = await self.bot.wait_for("message", check=lambda m: m.author == ctx.author)
-            if msg.content == "yes":
-                del db[str(ctx.guild.id)]["applications"][app_name]["applications"][app_]
-                await ctx.send("Application declined")
-                async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
-                    await fp.write(json.dumps(db, indent=4))
-            else:
-                return await ctx.send(embed=discord.Embed(title="Cancelled", description="Application not declined", color=discord.Color.red()))
+        )
+
     @slash_utils.slash_command()
-    async def list_applications(self, ctx, app_name:str = None):
+    @slash_utils(app_name="Application Name",desc="Description of application. (can be multi line)")
+    async def set_app_desc(self, ctx, app_name: str, desc: str):
+        """
+        Sets the description of an application
+
+        Required Argument:
+            The name of the application
+            Description of the application
+
+        Required Permission:
+            Administrator or Role that have permission.
+        """
+
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
-        
-        if app_name is None:
-            return await ctx.send("You need to input application name")
-        elif app_name not in list(db[str(ctx.guild.id)]["applications"]):
-            return await ctx.send("Your application isn't exist")
 
-        embeds = []
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
 
-        for userID, info in db[str(ctx.guild.id)]["applications"]["app_name"]["applications"].items():
-            member = ctx.guild.get_member(int(userID))
-            embed = discord.Embed(title=f"{member.name}'s application")
-            embed.add_field(name="Informations",value=f"""
-Name: {member.name}
-Applied when: {str(fromtimestamp(info["timestamp"])).replace('-', '/')}
-Application ID: {info["id"]}
-            """)
-            question_answer_thing = ""
-            count = 1
-            for question,answer in info["answers"].items():
-                question_answer_thing += f"{count}. {question}\nAnswer: {answer}"
-            embed.add_field(name="Questions and Answers",value=question_answer_thing)
-            embeds.append(embed)
-        for embed in embeds:
-            await ctx.send(embed=embed)
-            await asyncio.sleep(0.3)
+        db[str(ctx.guild.id)]["applications"][app_name]["description"] = desc
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Success",
+                description=f"Application {app_name} description set to {desc}",
+                color=discord.Color.green(),
+            )
+        )
+
+    @slash_utils.slash_command()
+    @slash_utils.describe(app="Application Name",question="Question")
+    async def make_question(self, app: str , question: str ):
+        """
+        Adds a question to an application
+
+        Required Argument:
+            The name of the application
+            Question you want to add
+
+        Required Permission:
+            Administrator or Role that have permission.
+        """
+        if app == "None" or question == "None":
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter an application name"
+                    if app == "None"
+                    else "Please enter question you want to add in application",
+                    color=discord.Color.red(),
+                )
+            )
+            return
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
+
+        if app not in list(db[str(ctx.guild.id)]["applications"]):
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description=f"Application {app} not found",
+                    color=discord.Color.red(),
+                )
+            )
+
+        try:
+            db[str(ctx.guild.id)]["applications"][app]["questions"].append(question)
+
+        except KeyError:
+            db[str(ctx.guild.id)]["applications"][app]["questions"] = [question]
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Success",
+                description=f"Question {question} added to application {app}",
+                color=discord.Color.green(),
+            )
+        )
+
+    @slash_utils.slash_command()
+    @slash_utils.describe(app="Application Name",role="A role that will be given to applier that their application is applied")
+    async def apply_app_role(self, app: str , role: discord.Role ):
+        """
+        Sets the role that will be given to the user when they apply for an application
+
+        Required Argument:
+            The name of the application
+            Role
+
+        Required Permission:
+            Administrator or Role that have permission.
+        """
+        if app == "None" or role == "None":
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter an application name"
+                    if app == "None"
+                    else "Please enter role you want to add in application",
+                    color=discord.Color.red(),
+                )
+            )
+            return
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
+
+        if app not in list(db[str(ctx.guild.id)]["applications"]):
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description=f"Application {app} not found",
+                    color=discord.Color.red(),
+                )
+            )
+
+        try:
+            db[str(ctx.guild.id)]["applications"][app]["roles"].append(role.id)
+
+        except KeyError:
+            db[str(ctx.guild.id)]["applications"][app]["roles"] = [role.id]
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Success",
+                description=f"Role {role.name} added to application {app}",
+                color=discord.Color.green(),
+            )
+        )
+
+    @slash_utils.slash_command()
+    @slash_utils.describe(app="Application Name",channel="A text channel that bot can send the application logs")
+    async def set_app_log(self, app: str , channel: discord.TextChannel ):
+        """
+        Sets the channel where application logs will be sent
+
+        Required Argument:
+            The name of the application
+            Channel
+
+        Required Permission:
+            Administrator or Role that have permission.
+        """
+        if app == "None" or channel == "None":
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter an application name"
+                    if app == "None"
+                    else "Please enter channel you want to add in application",
+                    color=discord.Color.red(),
+                )
+            )
+            return
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        if ctx.author.guild_permissions.administrator == False:
+            for role in ctx.author.roles:
+                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                    no_perm = False
+                    break
+                else:
+                    no_perm = True
+        if no_perm == True:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="You do not have permission to use this command",
+                    color=discord.Color.red(),
+                )
+            )
+
+        if app not in list(db[str(ctx.guild.id)]["applications"]):
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description=f"Application {app} not found",
+                    color=discord.Color.red(),
+                )
+            )
+
+        try:
+            db[str(ctx.guild.id)]["applications"][app]["log_channel"] = channel.id
+
+        except KeyError:
+            db[str(ctx.guild.id)]["applications"][app]["log_channel"] = channel.id
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+    @slash_utils.slash_command()
+    @commands.has_permissions(administrator=True)
+    @slash.describe(role="A application moderator role where they can accept and deny the application apply request")
+    async def add_app_mod(self, ctx, role: discord.Role ):
+        if role is None:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter a role",
+                    color=discord.Color.red(),
+                )
+            )
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        try:
+            db[str(ctx.guild.id)]["mod_roles"].append(role.id)
+        except KeyError:
+            db[str(ctx.guild.id)]["mod_roles"] = [role.id]
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title="Success",
+                description=f"Role {role.name} added to mod roles",
+                color=discord.Color.green(),
+            )
+        )
+
+    @slash_utils.slash_command()
+    @commands.has_permissions(administrator=True)
+    @slash_utils.describe(role="A role where they can configure all applications")
+    async def set_setting_role(self, ctx, role: discord.Role ):
+        if role is None:
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="Please enter a role",
+                    color=discord.Color.red(),
+                )
+            )
+
+        async with aiofiles.open("src/cogs/db/db.json") as fp:
+            db = json.loads(await fp.read())
+
+        try:
+            db[str(ctx.guild.id)]["setting_role"] = role.id
+        except KeyError:
+            db[str(ctx.guild.id)]["setting_role"] = role.id
+
+        async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
+            await fp.write(json.dumps(db))
+
+        await ctx.send(
+            embed=discord.Embed(
+                title="Success",
+                description=f"Role {role.name} added to setting role",
+                color=discord.Color.green(),
+            )
+        )
+
 
 def setup(bot):
-    bot.add_cog(Slash_App_manager(bot))
+    bot.add_cog(Settings(bot))
