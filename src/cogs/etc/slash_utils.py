@@ -4,20 +4,9 @@ import inspect
 import sys
 import traceback
 from collections import defaultdict
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Coroutine,
-    Generic,
-    TypeVar,
-    Union,
-    get_args,
-    get_origin,
-    overload,
-)
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, ClassVar,
+                    Coroutine, Generic, TypeVar, Union, get_args, get_origin,
+                    overload)
 
 import discord
 import discord.channel
