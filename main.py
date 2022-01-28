@@ -10,6 +10,7 @@ from discord.ext import commands
 import keep_alive
 
 bot = commands.Bot(command_prefix="a!", intents=discord.Intents().all())
+# vynx is blocked due to we didnt verify it
 
 
 @bot.event
