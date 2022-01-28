@@ -7,7 +7,7 @@ import discord
 import requests
 
 import keep_alive
-import src.cogs.datas.slash_utils as slash
+import src.cogs.etc.slash_utils as slash
 
 bot = slash.Bot(command_prefix="a!", intents=discord.Intents().all())
 
