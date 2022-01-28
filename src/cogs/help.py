@@ -1,6 +1,8 @@
+import random
+
 import discord
 from discord.ext import commands
-import random
+
 
 class Help(commands.Cog):
     def __init__(self, bot):
@@ -46,9 +48,9 @@ class Help(commands.Cog):
                 value=", ".join(command.aliases) if command.aliases else "None",
             )
             await ctx.send(embed=embed)
-        
+
         @commands.command()
-        async def tips(self,ctx):
+        async def tips(self, ctx):
             tips_ = [
                 "You can create application with space in it but you need to wrap it in double quotes and everytime you need to configure the application you need to wrap it in double quote.",
                 "Help is most helpful command in the world",
@@ -57,9 +59,13 @@ class Help(commands.Cog):
                 "This bot written entire in python. (and the fact that only one dev make entire bot and fixing bugs :joy:)",
                 "Want to host your own of application bot? Simply follow instruction on https://github.com/vynx-bot/application-manager-bot",
                 "Want a nicer bot? You can send us a PR!",
-                "Slash command is the most underrated feature in discord."
+                "Slash command is the most underrated feature in discord.",
             ]
-            await ctx.send(embed=discord.Embed(title="Tips for using this bot",description=random.choice(tips)))
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Tips for using this bot", description=random.choice(tips)
+                )
+            )
 
 
 def setup(bot):

@@ -32,7 +32,7 @@ class Settings(commands.Cog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -46,7 +46,7 @@ class Settings(commands.Cog):
                 )
             )
 
-        db[str(ctx.guild.id)]["applications"][app] = {
+        db[str(ctx.guild.id)]["applications"][app_name] = {
             "closed": False,
             "applications": [],
         }
@@ -83,7 +83,7 @@ class Settings(commands.Cog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -111,7 +111,7 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def make_question(self, app: str = None, question: str = None):
+    async def make_question(self, ctx, app: str = None, question: str = None):
         """
         Adds a question to an application
 
@@ -139,7 +139,7 @@ class Settings(commands.Cog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -180,7 +180,7 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def apply_app_role(self, app: str = None, role: discord.Role = None):
+    async def apply_app_role(self, ctx, app: str = None, role: discord.Role = None):
         """
         Sets the role that will be given to the user when they apply for an application
 
@@ -208,7 +208,7 @@ class Settings(commands.Cog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -249,7 +249,9 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def set_app_log(self, app: str = None, channel: discord.TextChannel = None):
+    async def set_app_log(
+        self, ctx, app: str = None, channel: discord.TextChannel = None
+    ):
         """
         Sets the channel where application logs will be sent
 
@@ -277,7 +279,7 @@ class Settings(commands.Cog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:

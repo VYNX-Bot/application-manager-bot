@@ -34,16 +34,14 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Error",
-                    description=f"Exception Name {type(e).strip(f'<class{single_quote}{single_quote}>')}\nFull Error\n```\n{e}\n```",
+                    description="".join(traceback.format_tb(e.__traceback__)),
                     color=discord.Color.red(),
                 )
             )
             print(
                 "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
             )
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
+            traceback.print_exception(type(e), e, e.__traceback__, file=sys.stderr)
 
 
 def setup(bot):

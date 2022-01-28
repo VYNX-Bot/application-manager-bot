@@ -1,14 +1,15 @@
+import asyncio
 import json
 
+import aiofiles
 import discord
-from discord.ext import command
+from discord.ext import commands
 from discord.utils import get as finder
 
 from src.cogs.etc import slash_utils
 
 
-class Application_Manager(commands.Cog):
-
+class SlashApplication_Manager(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("Application Manager cog loaded")
@@ -129,7 +130,7 @@ class Application_Manager(commands.Cog):
             id=db[str(ctx.guild.id)]["applications"][app_name]["log_channel"],
         )
         if logger == None:
-            return await ctx, author.send(
+            return await ctx.author.send(
                 embed=discord.Embed(
                     title="Error",
                     description=f"The log channel for {app_name} does not exist. Please tell this to your server admin",
@@ -179,4 +180,4 @@ class Application_Manager(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Application_Manager(bot))
+    bot.add_cog(SlashApplication_Manager(bot))

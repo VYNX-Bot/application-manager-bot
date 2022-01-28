@@ -3,17 +3,18 @@ import json
 import aiofiles
 import discord
 from discord.ext import commands
+
 from src.cogs.etc import slash_utils
 
-class Settings(slash_utils.ApplicationCog):
 
+class SlashAppManage(slash_utils.ApplicationCog):
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Settings cog loaded")
+        print("SlashAppManage cog loaded")
 
     @slash_utils.slash_command()
     @slash_utils.describe(app_name="Application Name")
-    async def make_app(self, ctx, app_name: str ):
+    async def make_app(self, ctx, app_name: str):
         """
         Creates an application
 
@@ -45,7 +46,7 @@ class Settings(slash_utils.ApplicationCog):
                 )
             )
 
-        db[str(ctx.guild.id)]["applications"][app] = {
+        db[str(ctx.guild.id)]["applications"][app_name] = {
             "closed": False,
             "applications": [],
         }
@@ -62,7 +63,10 @@ class Settings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @slash_utils(app_name="Application Name",desc="Description of application. (can be multi line)")
+    @slash_utils.describe(
+        app_name="Application Name",
+        desc="Description of application. (can be multi line)",
+    )
     async def set_app_desc(self, ctx, app_name: str, desc: str):
         """
         Sets the description of an application
@@ -80,7 +84,7 @@ class Settings(slash_utils.ApplicationCog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -108,8 +112,8 @@ class Settings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @slash_utils.describe(app="Application Name",question="Question")
-    async def make_question(self, app: str , question: str ):
+    @slash_utils.describe(app="Application Name", question="Question")
+    async def make_question(self, ctx, app: str, question: str):
         """
         Adds a question to an application
 
@@ -137,7 +141,7 @@ class Settings(slash_utils.ApplicationCog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -178,8 +182,11 @@ class Settings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @slash_utils.describe(app="Application Name",role="A role that will be given to applier that their application is applied")
-    async def apply_app_role(self, app: str , role: discord.Role ):
+    @slash_utils.describe(
+        app="Application Name",
+        role="A role that will be given to applier that their application is applied",
+    )
+    async def apply_app_role(self, ctx, app: str, role: discord.Role):
         """
         Sets the role that will be given to the user when they apply for an application
 
@@ -207,7 +214,7 @@ class Settings(slash_utils.ApplicationCog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -248,8 +255,11 @@ class Settings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @slash_utils.describe(app="Application Name",channel="A text channel that bot can send the application logs")
-    async def set_app_log(self, app: str , channel: discord.TextChannel ):
+    @slash_utils.describe(
+        app="Application Name",
+        channel="A text channel that bot can send the application logs",
+    )
+    async def set_app_log(self, ctx, app: str, channel: discord.TextChannel):
         """
         Sets the channel where application logs will be sent
 
@@ -277,7 +287,7 @@ class Settings(slash_utils.ApplicationCog):
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
-                if role.id in sb[str(ctx.guild.id)]["setting_roles"]:
+                if role.id in db[str(ctx.guild.id)]["setting_roles"]:
                     no_perm = False
                     break
                 else:
@@ -310,9 +320,12 @@ class Settings(slash_utils.ApplicationCog):
             await fp.write(json.dumps(db))
 
     @slash_utils.slash_command()
-    @commands.has_permissions(administrator=True)
-    @slash.describe(role="A application moderator role where they can accept and deny the application apply request")
-    async def add_app_mod(self, ctx, role: discord.Role ):
+    @slash_utils.describe(
+        role="A application moderator role where they can accept and deny the application apply request"
+    )
+    async def add_app_mod(self, ctx, role: discord.Role):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You don't have permissions!")
         if role is None:
             return await ctx.send(
                 embed=discord.Embed(
@@ -342,9 +355,10 @@ class Settings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @commands.has_permissions(administrator=True)
     @slash_utils.describe(role="A role where they can configure all applications")
-    async def set_setting_role(self, ctx, role: discord.Role ):
+    async def set_setting_role(self, ctx, role: discord.Role):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You don't have permissions!")
         if role is None:
             return await ctx.send(
                 embed=discord.Embed(
@@ -375,4 +389,4 @@ class Settings(slash_utils.ApplicationCog):
 
 
 def setup(bot):
-    bot.add_cog(Settings(bot))
+    bot.add_cog(SlashAppManage(bot))

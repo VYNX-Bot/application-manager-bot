@@ -15,6 +15,7 @@ Flask = "^2.0.2"
 python-dotenv = "^0.19.2"
 typing-extensions = "^4.0.1"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py"}
+discord = "^1.7.3"
 [tool.poetry.dependencies.aiohttp]
 extras = ["speedups"]
 version = "<3.8.0"

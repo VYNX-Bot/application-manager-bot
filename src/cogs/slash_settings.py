@@ -14,11 +14,12 @@ class SlashSettings(slash_utils.ApplicationCog):
 
     @slash_utils.slash_command()
     @slash_utils.describe(app_name="The name of the application that you want to make.")
-    @commands.has_permissions(administrator=True)
-    async def make_app(self, app_name: str):
+    async def make_app(self, ctx, app_name: str):
         """
         Create Application
         """
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You don't have permissions!")
         if app_name == "None":
             await ctx.send("Please enter a name for your application")
             return
@@ -40,8 +41,9 @@ class SlashSettings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @commands.has_permissions(administrator=True)
-    async def make_question(self, app: str, question: str):
+    async def make_question(self, ctx, app: str, question: str):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You don't have permissions!")
         if app == "None" or question == "None":
             return await ctx.send(
                 embed=discord.Embed(
@@ -84,8 +86,9 @@ class SlashSettings(slash_utils.ApplicationCog):
         )
 
     @slash_utils.slash_command()
-    @commands.has_permissions(administrator=True)
-    async def apply_app_role(self, app: str, role: discord.Role):
+    async def apply_app_role(self, ctx, app: str, role: discord.Role):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You don't have permissions!")
         if app == "None" or role == "None":
             return await ctx.send(
                 embed=discord.Embed(

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import inspect
+import json
 import sys
 import traceback
 from collections import defaultdict
-from typing import (TYPE_CHECKING, Any, Awaitable, Callable, ClassVar,
-                    Coroutine, Generic, TypeVar, Union, get_args, get_origin,
-                    overload)
+from typing import (TYPE_CHECKING, Coroutine, Generic, Literal, TypeVar, Union,
+                    get_args, get_origin, overload)
 
 import discord
 import discord.channel
@@ -14,7 +15,6 @@ import discord.http
 import discord.state
 from discord.ext import commands
 from discord.utils import MISSING
-from typing_extensions import Concatenate, ParamSpec, Self
 
 BotT = TypeVar("BotT", bound="Bot")
 CtxT = TypeVar("CtxT", bound="Context")
@@ -34,6 +34,9 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
+    from typing import Any, Awaitable, Callable, ClassVar
+
+    from typing_extensions import Concatenate, ParamSpec, Self
 
     CmdP = ParamSpec("CmdP")
     CmdT = Callable[Concatenate[CogT, CtxT, CmdP], Awaitable[Any]]
@@ -178,6 +181,8 @@ class Range(metaclass=_RangeMeta):
 
 
 class Bot(commands.Bot):
+    application_id: int  # hack to avoid linting errors on http methods
+
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         await self.login(token)
 
@@ -190,11 +195,9 @@ class Bot(commands.Bot):
     def get_application_command(self, name: str) -> Command | None:
         """
         Gets and returns an application command by the given name.
-
         Parameters:
         - name: ``str``
         - - The name of the command.
-
         Returns:
         - [Command](#deco-slash_commandkwargs)
         - - The relevant command object
@@ -216,17 +219,12 @@ class Bot(commands.Bot):
         - guild_id: ``Optional[str]``
         - - The guild ID to delete from, or ``None`` to delete global commands.
         """
-        path = f"/applications/{self.application_id}"
         if guild_id is not None:
-            path += f"/guilds/{guild_id}"
-        path += "/commands"
-
-        route = discord.http.Route("GET", path)
-        data = await self.http.request(route)
-
-        for cmd in data:
-            snow = cmd["id"]
-            await self.delete_command(snow, guild_id=guild_id)
+            await self.http.bulk_upsert_guild_commands(
+                self.application_id, guild_id, []
+            )
+        else:
+            await self.http.bulk_upsert_global_commands(self.application_id, [])
 
     async def delete_command(self, id: int, *, guild_id: int | None = None):
         """
@@ -238,11 +236,10 @@ class Bot(commands.Bot):
         - guild_id: ``Optional[str]``
         - - The guild ID to delete from, or ``None`` to delete a global command.
         """
-        route = discord.http.Route(
-            "DELETE",
-            f'/applications/{self.application_id}{f"/guilds/{guild_id}" if guild_id else ""}/commands/{id}',
-        )
-        await self.http.request(route)
+        if guild_id is not None:
+            await self.http.delete_guild_command(self.application_id, guild_id, id)
+        else:
+            await self.http.delete_global_command(self.application_id, id)
 
     async def sync_commands(self) -> None:
         """
@@ -254,25 +251,31 @@ class Bot(commands.Bot):
                 "sync_commands must be called after `run`, `start` or `login`"
             )
 
+        command_payloads = defaultdict(list)
         for cog in self.cogs.values():
             if not isinstance(cog, ApplicationCog):
                 continue
+
+            if not hasattr(cog, "_commands"):
+                cog._commands = {}
 
             slashes = inspect.getmembers(cog, lambda c: isinstance(c, Command))
             for _, cmd in slashes:
                 cmd.cog = cog
                 cog._commands[cmd.name] = cmd
-
-                route = f"/applications/{self.application_id}"
-
-                if cmd.guild_id:
-                    route += f"/guilds/{cmd.guild_id}"
-                route += "/commands"
-
                 body = cmd._build_command_payload()
+                command_payloads[cmd.guild_id].append(body)
 
-                route = discord.http.Route("POST", route)
-                await self.http.request(route, json=body)
+        global_commands = command_payloads.pop(None, [])
+        if global_commands:
+            await self.http.bulk_upsert_global_commands(
+                self.application_id, global_commands
+            )
+
+        for guild_id, payload in command_payloads.items():
+            await self.http.bulk_upsert_guild_commands(
+                self.application_id, guild_id, payload
+            )
 
 
 class Context(Generic[BotT, CogT]):
@@ -293,7 +296,6 @@ class Context(Generic[BotT, CogT]):
         self.bot = bot
         self.command = command
         self.interaction = interaction
-        self._responded = False
 
     @overload
     def send(
@@ -368,22 +370,39 @@ class Context(Generic[BotT, CogT]):
         - - A list of files to send with the message. Incompatible with ``file``.
         - ephemeral: ``bool``
         - - Whether the message should be ephemeral (only visible to the interaction user).
+        - - Note: This field is ignored if the interaction was deferred.
         - tts: ``bool``
         - - Whether the message should be played via Text To Speech. Send TTS Messages permission is required.
         - view: [``discord.ui.View``](https://discordpy.readthedocs.io/en/master/api.html#discord.ui.View)
         - - Components to attach to the sent message.
-
         Returns
         - [``discord.InteractionMessage``](https://discordpy.readthedocs.io/en/master/api.html#discord.InteractionMessage) if this is the first time responding.
         - [``discord.WebhookMessage``](https://discordpy.readthedocs.io/en/master/api.html#discord.WebhookMessage) for consecutive responses.
         """
-        if self._responded:
+        if self.interaction.response.is_done():
             return await self.interaction.followup.send(content, wait=True, **kwargs)
 
         await self.interaction.response.send_message(content or None, **kwargs)
-        self._responded = True
 
         return await self.interaction.original_message()
+
+    async def defer(self, *, ephemeral: bool = False) -> None:
+        """
+        Defers the given interaction.
+        This is done to acknowledge the interaction.
+        A secondary action will need to be sent within 15 minutes through the follow-up webhook.
+        Parameters:
+        - ephemeral: ``bool``
+        - - Indicates whether the deferred message will eventually be ephemeral. Defaults to `False`
+        Returns
+        - ``None``
+        Raises
+        - [``discord.HTTPException``](https://discordpy.readthedocs.io/en/master/api.html#discord.HTTPException)
+        - - Deferring the interaction failed.
+        - [``discord.InteractionResponded``](https://discordpy.readthedocs.io/en/master/api.html#discord.InteractionResponded)
+        - - This interaction has been responded to before.
+        """
+        await self.interaction.response.defer(ephemeral=ephemeral)
 
     @property
     def cog(self) -> CogT:
@@ -513,6 +532,8 @@ class SlashCommand(Command[CogT]):
                 elif get_origin(ann) is Union:
                     args = get_args(ann)
                     real_t = args[0]
+                elif get_origin(ann) is Literal:
+                    real_t = type(ann.__args__[0])
                 else:
                     real_t = ann
 
@@ -540,6 +561,12 @@ class SlashCommand(Command[CogT]):
                     if len(args) != 3:
                         filtered = [channel_filter[i] for i in args]
                         option["channel_types"] = filtered
+
+                elif get_origin(ann) is Literal:
+                    arguments = ann.__args__
+                    option["choices"] = [
+                        {"name": str(a), "value": a} for a in arguments
+                    ]
 
                 elif issubclass(ann, discord.abc.GuildChannel):
                     option["channel_types"] = [channel_filter[ann]]
