@@ -5,11 +5,11 @@ import os
 
 import discord
 import requests
+from discord.ext import commands
 
 import keep_alive
-import src.cogs.etc.slash_utils as slash
 
-bot = slash.Bot(command_prefix="a!", intents=discord.Intents().all())
+bot = commands.Bot(command_prefix="a!", intents=discord.Intents().all())
 
 
 @bot.event
