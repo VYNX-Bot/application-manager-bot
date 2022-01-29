@@ -12,7 +12,7 @@ class CogsManagement(commands.Cog):
     async def on_ready(self):
         print("CogsManagement is loaded.")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_role("Vynx Devs")
     async def load(self, ctx, *, cog: str):
         """
@@ -25,7 +25,7 @@ class CogsManagement(commands.Cog):
         else:
             await ctx.send(f"**`SUCCESS`**")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_role("Vynx Devs")
     async def unload(self, ctx, *, cog: str):
         """
@@ -38,7 +38,7 @@ class CogsManagement(commands.Cog):
         else:
             await ctx.send(f"**`SUCCESS`**")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_role("Vynx Devs")
     async def reload(self, ctx, *, cog: str):
         """
@@ -52,7 +52,7 @@ class CogsManagement(commands.Cog):
         else:
             await ctx.send(f"**`SUCCESS`**")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_role("Vynx Devs")
     async def reloadall(self, ctx):
         """

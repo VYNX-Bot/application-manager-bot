@@ -40,6 +40,8 @@ class Settings(commands.Cog):
                     no_perm = True
         else:
             no_perm = False
+
+        print(no_perm)
         if no_perm == True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -77,12 +79,21 @@ class Settings(commands.Cog):
         Required Permission:
             Administrator or Role that have permission.
         """
-        if app_name == "None" or desc == "None":
+        if app_name == None or desc == None:
             await ctx.send("Please enter a name for your application and a description")
             return
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
+
+        if app_name not in list(db[str(ctx.guild.id)]):
+            return await ctx.send(
+                embed=discord.Embed(
+                    title="Error!",
+                    description="Application Not Found",
+                    color=discord.Color.red()
+                )
+            )
 
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
@@ -91,6 +102,8 @@ class Settings(commands.Cog):
                     break
                 else:
                     no_perm = True
+        else:
+            no_perm = False
         if no_perm == True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -114,7 +127,7 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def make_question(self, ctx, app: str = None, question: str = None):
+    async def make_question(self, ctx, app: str = None,*, question: str = None):
         """
         Adds a question to an application
 
@@ -147,6 +160,8 @@ class Settings(commands.Cog):
                     break
                 else:
                     no_perm = True
+        else:
+            no_perm = False
         if no_perm == True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -216,6 +231,8 @@ class Settings(commands.Cog):
                     break
                 else:
                     no_perm = True
+        else:
+            no_perm = False
         if no_perm == True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -275,7 +292,6 @@ class Settings(commands.Cog):
                     color=discord.Color.red(),
                 )
             )
-            return
 
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
@@ -287,6 +303,8 @@ class Settings(commands.Cog):
                     break
                 else:
                     no_perm = True
+        else:
+            no_perm = False
         if no_perm == True:
             return await ctx.send(
                 embed=discord.Embed(
@@ -313,6 +331,14 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
             await fp.write(json.dumps(db))
+        
+        await ctx.send(
+            embed=discord.Embed(
+                title="Success",
+                description=f"Added {channel} to logging for {app}",
+                color=discord.Color.green()
+            )
+        )
 
     @commands.command()
     @commands.has_permissions(administrator=True)
