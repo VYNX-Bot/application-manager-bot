@@ -171,6 +171,8 @@ Application ID: {info["id"]}
                 question_answer_thing += f"{count}. {question}\nAnswer: {answer}"
             embed.add_field(name="Questions and Answers", value=question_answer_thing)
             embeds.append(embed)
+        if len(embeds) == 0:
+            return await ctx.send("There is no application")
         for embed in embeds:
             await ctx.send(embed=embed)
             await asyncio.sleep(0.3)

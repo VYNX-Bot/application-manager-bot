@@ -38,7 +38,7 @@ class Application_Manager(commands.Cog):
         Required Arguments:
             app_name -- The name of the application to apply to
         """
-        if app_name == "None":
+        if app_name == None:
             return await ctx.send(
                 embed=discord.Embed(
                     title="Error",

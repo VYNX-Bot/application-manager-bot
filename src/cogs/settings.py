@@ -67,7 +67,7 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def set_app_desc(self, ctx, app_name: str = None, desc: str = None):
+    async def set_app_desc(self, ctx, app_name: str = None,* , desc: str = None):
         """
         Sets the description of an application
 
@@ -85,7 +85,7 @@ class Settings(commands.Cog):
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
 
-        if app_name not in list(db[str(ctx.guild.id)]):
+        if app_name not in list(db[str(ctx.guild.id)]["applications"]):
             return await ctx.send(
                 embed=discord.Embed(
                     title="Error!",
