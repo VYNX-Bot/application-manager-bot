@@ -1,6 +1,6 @@
 import os
 
-os.chdir('../')
+os.chdir("../")
 
 for cogs in os.listdir():
     try:
@@ -27,9 +27,9 @@ if ctx.author.guild_permissions.administrator == False:
                     no_perm = True
             else:
                 no_perm = False
-            """
+            """,
         )
-        with open(cogs,'w') as fp:
+        with open(cogs, "w") as fp:
             fp.write(con)
     except IsADirectoryError:
         continue

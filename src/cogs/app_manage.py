@@ -1,12 +1,10 @@
 import asyncio
 import json
-import time
 from datetime import datetime
 
 import aiofiles
 import discord
 from discord.ext import commands
-from discord.utils import get as finder
 
 
 class App_manager(commands.Cog):
@@ -154,9 +152,9 @@ class App_manager(commands.Cog):
 
         embeds = []
 
-        for userID, info in db[str(ctx.guild.id)]["applications"]["app_name"][
+        for userID, info in db[str(ctx.guild.id)]["applications"][app_name][
             "applications"
-        ].items():
+        ]:
             member = ctx.guild.get_member(int(userID))
             embed = discord.Embed(title=f"{member.name}'s application")
             embed.add_field(

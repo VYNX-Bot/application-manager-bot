@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 from datetime import datetime
@@ -146,7 +147,7 @@ class Application_Manager(commands.Cog):
             id=db[str(ctx.guild.id)]["applications"][app_name]["log_channel"],
         )
         if logger == None:
-            return await ctx, author.send(
+            return await ctx.author.send(
                 embed=discord.Embed(
                     title="Error",
                     description=f"The log channel for {app_name} does not exist. Please tell this to your server admin",
@@ -172,14 +173,17 @@ class Application_Manager(commands.Cog):
         )
         embed.add_field(name="Applied to", value=app_name, inline=False)
         embed.add_field(name="Application ID", value=msg.id, inline=False)
+        answers = {}
         for question in questions:
             counter += 1
-            await applier.send(counter + "." + question)
+            await applier.send(str(counter) + "." + question)
             try:
                 answer = await self.bot.wait_for("message", check=dm_check, timeout=60)
                 answers[question] = answer.content
                 embed.add_field(
-                    name=counter + "." + question, value=answer.content, inline=True
+                    name=str(counter) + "." + question,
+                    value=answer.content,
+                    inline=True,
                 )
                 await msg.edit(embed=embed)
             except asyncio.TimeoutError:
@@ -194,7 +198,7 @@ class Application_Manager(commands.Cog):
         await applier.send(
             f"Thank you for applying! You can unregister your application by use `a!close {app_name}`"
         )
-        embed.set_footer(text=f"")
+        embed.set_footer(text=f"To accept this application use a slash command or a!accept {msg.id} or decline it use slash command or a!decline {msg.id}")
         await msg.edit(embed=embed)
         db[str(ctx.guild.id)]["applications"][app_name]["applications"][
             str(applier.id)

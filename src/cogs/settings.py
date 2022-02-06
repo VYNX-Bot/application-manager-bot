@@ -30,7 +30,6 @@ class Settings(commands.Cog):
         async with aiofiles.open("src/cogs/db/db.json") as fp:
             db = json.loads(await fp.read())
 
-
         if ctx.author.guild_permissions.administrator == False:
             for role in ctx.author.roles:
                 if role.id in db[str(ctx.guild.id)]["setting_roles"]:
@@ -61,7 +60,7 @@ class Settings(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"Application {app_name} created",
                 color=discord.Color.green(),
             )
@@ -91,7 +90,7 @@ class Settings(commands.Cog):
                 embed=discord.Embed(
                     title="Error!",
                     description="Application Not Found",
-                    color=discord.Color.red()
+                    color=discord.Color.red(),
                 )
             )
 
@@ -120,14 +119,14 @@ class Settings(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"Application {app_name} description set to {desc}",
                 color=discord.Color.green(),
             )
         )
 
     @commands.command()
-    async def make_question(self, ctx, app: str = None,*, question: str = None):
+    async def make_question(self, ctx, app: str = None, *, question: str = None):
         """
         Adds a question to an application
 
@@ -191,7 +190,7 @@ class Settings(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"Question {question} added to application {app}",
                 color=discord.Color.green(),
             )
@@ -262,7 +261,7 @@ class Settings(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"Role {role.name} added to application {app}",
                 color=discord.Color.green(),
             )
@@ -331,12 +330,12 @@ class Settings(commands.Cog):
 
         async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
             await fp.write(json.dumps(db))
-        
+
         await ctx.send(
             embed=discord.Embed(
                 title="Success",
                 description=f"Added {channel} to logging for {app}",
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
         )
 

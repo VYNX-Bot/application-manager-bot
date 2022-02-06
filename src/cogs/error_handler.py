@@ -22,12 +22,12 @@ class ErrorHandler(commands.Cog):
             elif len(nearest) == 1:
                 await ctx.send(f"Did you mean this command?\n{nearest[0]}")
             else:
-                await ctx.send(f"I don't know this command.")
+                await ctx.send("I don't know this command.")
         elif isinstance(e, commands.MissingRequiredArgument):
-            await ctx.send(f"Missing required argument.")
+            await ctx.send("Missing required argument.")
 
         elif isinstance(e, commands.MissingPermissions):
-            await ctx.send(f"You don't have permission to use this command.")
+            await ctx.send("You don't have permission to use this command.")
 
         else:
             single_quote = "'"

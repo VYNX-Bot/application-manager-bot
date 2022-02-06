@@ -63,7 +63,7 @@ class Help(commands.Cog):
             ]
             await ctx.send(
                 embed=discord.Embed(
-                    title="Tips for using this bot", description=random.choice(tips)
+                    title="Tips for using this bot", description=random.choice(tips_)
                 )
             )
 
