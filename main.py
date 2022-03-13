@@ -29,4 +29,4 @@ except Exception:
 	print(f"Rate limit {round(int(r.headers['Retry-After']) / 60, 2)} minutes left")
 
 keep_alive.keep_alive()
-bot.run(os.getenv("TOKEN"))
+bot.run(os.getenv("APP_BOT_TOKEN"))
