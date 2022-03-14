@@ -145,8 +145,19 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "discord"
+version = "1.7.3"
+description = "A mirror package for discord.py. Please install that instead."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+"discord.py" = ">=1.7.3"
+
+[[package]]
 name = "discord.py"
-version = "2.0.0a3575+g45d498c1"
+version = "2.0.0a3859+g6a43d60a"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
@@ -154,18 +165,19 @@ python-versions = ">=3.8.0"
 develop = false
 
 [package.dependencies]
-aiohttp = ">=3.6.0,<3.8.0"
+aiohttp = ">=3.6.0,<4"
 
 [package.extras]
-docs = ["sphinx (==4.0.2)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport"]
+docs = ["sphinx (==4.4.0)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport", "typing-extensions"]
 speed = ["orjson (>=3.5.4)"]
-voice = ["PyNaCl (>=1.3.0,<1.5)"]
+test = ["coverage", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock"]
+voice = ["PyNaCl (>=1.3.0,<1.6)"]
 
 [package.source]
 type = "git"
 url = "https://github.com/Rapptz/discord.py"
 reference = "master"
-resolved_reference = "45d498c1b76deaf3b394d17ccf56112fa691d160"
+resolved_reference = "6a43d60acf0b6a372bc2bd6645e9c56795e7bd2d"
 
 [[package]]
 name = "flask"
@@ -348,7 +360,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "3df62656abd648875ea10f7e4442e329d484131c0981163cda28735b3dc0a695"
+content-hash = "518215296961b7d4fa3e8bc6e780d0298929070b9ffcbd19b9210b07229e2ab2"
 
 [metadata.files]
 aiodns = [
@@ -552,6 +564,10 @@ click = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+discord = [
+    {file = "discord-1.7.3-py3-none-any.whl", hash = "sha256:248d728356e149c818a81b94659047a19305ea1623d4810bbb342f6b7df55f36"},
+    {file = "discord-1.7.3.tar.gz", hash = "sha256:846dd3d66888c2e0a8bd9120d8778a0fe088c003a7f6451668497f14e322a304"},
 ]
 "discord.py" = []
 flask = [
