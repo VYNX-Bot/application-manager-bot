@@ -27,9 +27,7 @@ for cog in os.listdir("./src/cogs"):
 try:
     r = requests.head(url="https://discord.com/api/v1")
 except Exception:
-    print(f"Rate limit {round(int(r.headers['Retry-After']) / 60, 2)} minutes left")
-try:
-    keep_alive.keep_alive()
-    bot.run(os.getenv("TOKEN"))
-except Exception:
-    print("Connection error")
+	print(f"Rate limit {round(int(r.headers['Retry-After']) / 60, 2)} minutes left")
+
+keep_alive.keep_alive()
+bot.run(os.getenv("APP_BOT_TOKEN"))

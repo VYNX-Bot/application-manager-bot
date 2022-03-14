@@ -33,7 +33,7 @@ class ErrorHandler(commands.Cog):
             print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
             traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
             error = ''.join(traceback.TracebackException.from_exception(exception).format())
-            await ctx.send(embed=discord.Embed(title="Command errors out!, please contact Snaky or Timelessnesses",description="```\n"+error+"\n```"))
+            await ctx.send(embed=discord.Embed(title="Command errors out!, please contact Unpredictable!",description="```\n"+error+"\n```"))
 
 
 def setup(bot):
