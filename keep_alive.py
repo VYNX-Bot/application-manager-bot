@@ -1,5 +1,6 @@
-import threading
 import os
+import threading
+
 from flask import Flask
 
 app = Flask("")
@@ -18,6 +19,7 @@ server = None
 
 
 def keep_alive():
+    return
     try:
         global server
         server = threading.Thread(target=run, daemon=True)

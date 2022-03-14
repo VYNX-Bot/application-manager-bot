@@ -1,7 +1,7 @@
-from src.cogs.utils import json
-
 import aiofiles
 from discord.ext import commands
+
+from src.cogs.utils import json
 
 
 class Guild_Handler(commands.Cog):
@@ -25,5 +25,5 @@ class Guild_Handler(commands.Cog):
             await fp.write(json.dumps(db))
 
 
-def setup(bot):
-    bot.add_cog(Guild_Handler(bot))
+async def setup(bot):
+    await bot.add_cog(Guild_Handler(bot))

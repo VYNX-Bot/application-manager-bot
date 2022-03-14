@@ -1,12 +1,16 @@
+import asyncio
+
+import aiofiles
 import discord
 from discord.ext import commands, tasks
-import asyncio
+
 from src.cogs.utils import json
-import aiofiles
+
+
 class Guild_Finder(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        
+
     async def guild_finder_task(self):
         while True:
             await self.bot.wait_until_ready()
@@ -14,13 +18,13 @@ class Guild_Finder(commands.Cog):
             async with aiofiles.open("src/cogs/db/db.json") as fp:
                 data = await fp.read()
                 data = json.loads(data)
-            
+
             for guild in guilds:
                 if str(guild.id) not in data:
                     data[str(guild.id)] = {
                         "applications": {},
                     }
-            
+
             async with aiofiles.open("src/cogs/db/db.json", "w") as fp:
                 await fp.write(json.dumps(data))
 
@@ -29,5 +33,6 @@ class Guild_Finder(commands.Cog):
     async def setup_hook(self):
         self.loop.create_task(self.guild_finder_task())
 
-def setup(bot):
-    bot.add_cog(Guild_Finder(bot))
+
+async def setup(bot):
+    await bot.add_cog(Guild_Finder(bot))

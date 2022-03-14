@@ -1,8 +1,8 @@
-from src.cogs.utils import json
-
 import aiofiles
 import discord
 from discord.ext import commands
+
+from src.cogs.utils import json
 
 
 class Settings(commands.Cog):
@@ -67,7 +67,7 @@ class Settings(commands.Cog):
         )
 
     @commands.command()
-    async def set_app_desc(self, ctx, app_name: str = None,* , desc: str = None):
+    async def set_app_desc(self, ctx, app_name: str = None, *, desc: str = None):
         """
         Sets the description of an application
 
@@ -402,5 +402,5 @@ class Settings(commands.Cog):
         )
 
 
-def setup(bot):
-    bot.add_cog(Settings(bot))
+async def setup(bot):
+    await bot.add_cog(Settings(bot))

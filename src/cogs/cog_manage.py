@@ -4,6 +4,18 @@ import discord
 from discord.ext import commands
 
 
+def check():
+    def inner(ctx):
+        for role in ctx.author.roles:
+            if role.id == 932721712485769292:
+                return True
+        if ctx.author.id == 890913140278181909:
+            return True
+        return False
+
+    return commands.check(inner)
+
+
 class CogsManagement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -13,7 +25,7 @@ class CogsManagement(commands.Cog):
         print("CogsManagement is loaded.")
 
     @commands.command(hidden=True)
-    @commands.has_role("Vynx Devs")
+    @check()
     async def load(self, ctx, *, cog: str):
         """
         Loads a cog.
@@ -26,7 +38,7 @@ class CogsManagement(commands.Cog):
             await ctx.send(f"**`SUCCESS`**")
 
     @commands.command(hidden=True)
-    @commands.has_role("Vynx Devs")
+    @check()
     async def unload(self, ctx, *, cog: str):
         """
         Unloads a cog.
@@ -39,7 +51,7 @@ class CogsManagement(commands.Cog):
             await ctx.send(f"**`SUCCESS`**")
 
     @commands.command(hidden=True)
-    @commands.has_role("Vynx Devs")
+    @check()
     async def reload(self, ctx, *, cog: str):
         """
         Reloads a cog.
@@ -53,7 +65,7 @@ class CogsManagement(commands.Cog):
             await ctx.send(f"**`SUCCESS`**")
 
     @commands.command(hidden=True)
-    @commands.has_role("Vynx Devs")
+    @check()
     async def reloadall(self, ctx):
         """
         Reloads all cogs.
@@ -72,5 +84,5 @@ class CogsManagement(commands.Cog):
                 await ctx.send(f"**`SUCCESS`**")
 
 
-def setup(bot):
-    bot.add_cog(CogsManagement(bot))
+async def setup(bot):
+    await bot.add_cog(CogsManagement(bot))

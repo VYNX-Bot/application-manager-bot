@@ -1,10 +1,11 @@
 import asyncio
-from src.cogs.utils import json
 from datetime import datetime
 
 import aiofiles
 import discord
 from discord.ext import commands
+
+from src.cogs.utils import json
 
 
 class App_manager(commands.Cog):
@@ -178,5 +179,5 @@ Application ID: {info["id"]}
             await asyncio.sleep(0.3)
 
 
-def setup(bot):
-    bot.add_cog(App_manager(bot))
+async def setup(bot):
+    await bot.add_cog(App_manager(bot))

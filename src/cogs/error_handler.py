@@ -30,11 +30,18 @@ class ErrorHandler(commands.Cog):
             await ctx.send("You don't have permission to use this command.")
 
         else:
-            print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-            traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
-            error = ''.join(traceback.TracebackException.from_exception(exception).format())
-            await ctx.send(embed=discord.Embed(title="Command errors out!, please contact Unpredictable!",description="```\n"+error+"\n```"))
+            print(
+                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+            )
+            traceback.print_exception(type(e), e, e.__traceback__, file=sys.stderr)
+            error = "".join(traceback.TracebackException.from_exception(e).format())
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Command errors out!, please contact Unpredictable!",
+                    description="```\n" + error + "\n```",
+                )
+            )
 
 
-def setup(bot):
-    bot.add_cog(ErrorHandler(bot))
+async def setup(bot):
+    await bot.add_cog(ErrorHandler(bot))

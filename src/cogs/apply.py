@@ -1,5 +1,4 @@
 import asyncio
-from src.cogs.utils import json
 import time
 from datetime import datetime
 
@@ -7,6 +6,8 @@ import aiofiles
 import discord
 from discord.ext import commands
 from discord.utils import get as finder
+
+from src.cogs.utils import json
 
 
 class Application_Manager(commands.Cog):
@@ -24,6 +25,13 @@ class Application_Manager(commands.Cog):
         db = json.load(open("src/cogs/db/db.json"))
         applications = db[str(ctx.guild.id)]["applications"]
         embed = discord.Embed(title="Applications", color=discord.Color.green())
+        if len(applications) == 0:
+            embed.add_field(
+                name="No applications",
+                value="There are no applications for this server",
+                inline=False,
+            )
+            return await ctx.send(embed=embed)
         for app in applications:
             embed.add_field(
                 name=app, value=applications[app]["description"], inline=False
@@ -162,7 +170,30 @@ class Application_Manager(commands.Cog):
         )
         msg = await logger.send(embed=embed)
         app_info = db[str(ctx.guild.id)]["applications"][app_name]
-        questions = app_info["questions"]
+        try:
+            questions = app_info["questions"]
+        except KeyError:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="No questions found",
+                    color=discord.Color.red(),
+                )
+            )
+            await ctx.author.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="No questions found\nPlease contact peoples that can configure the application!",
+                    color=discord.Color.red(),
+                )
+            )
+            await logger.send(
+                embed=discord.Embed(
+                    title="Error",
+                    description="No questions found",
+                    color=discord.Color.red(),
+                )
+            )
         counter = 0
         await applier.send(
             f"Hello {applier.mention}, you are applying for {app_name} for {ctx.guild.name}\nRemember! You have 1 minute for each question!"
@@ -198,7 +229,9 @@ class Application_Manager(commands.Cog):
         await applier.send(
             f"Thank you for applying! You can unregister your application by use `a!close {app_name}`"
         )
-        embed.set_footer(text=f"To accept this application use a slash command or a!accept {msg.id} or decline it use slash command or a!decline {msg.id}")
+        embed.set_footer(
+            text=f"To accept this application use a slash command or a!accept {msg.id} or decline it use slash command or a!decline {msg.id}"
+        )
         await msg.edit(embed=embed)
         db[str(ctx.guild.id)]["applications"][app_name]["applications"][
             str(applier.id)
@@ -222,5 +255,5 @@ class Application_Manager(commands.Cog):
             await fp.write(json.dumps(db, indent=4))
 
 
-def setup(bot):
-    bot.add_cog(Application_Manager(bot))
+async def setup(bot):
+    await bot.add_cog(Application_Manager(bot))
