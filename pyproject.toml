@@ -14,6 +14,9 @@ aiofiles = "^0.8.0"
 Flask = "^2.0.2"
 python-dotenv = "^0.19.2"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py"}
+uvloop = {version = "^0.16.0", platform = "linux"}
+orjson = "^3.6.7"
+requests = "^2.27.1"
 [tool.poetry.dependencies.aiohttp]
 extras = ["speedups"]
 version = "<3.8.0"
